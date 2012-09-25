@@ -18,8 +18,8 @@ import os, sys, string
 
 # allowed vfat file names characters, inclusive lists, ascii ord values
 ALLOWED_ORD_VALS = []
-for sub_list in ((32, 33), (38, 41), (43, 46), (48, 57), (65, 90), (94, 95),
-            (97, 126)):
+for sub_list in ((32, 35), (38, 41), (43, 46), (48, 57), (61, 61),
+                 (65, 91), (93, 95), (97, 126)):
     # +1 include top
     ALLOWED_ORD_VALS.extend(range(sub_list[0], sub_list[1] + 1))
 
@@ -39,7 +39,7 @@ def print_help():
         print(s)
 
 
-def check_names(names):
+def check_names(root, names):
     """
     Check input names if it conforms with VFAT allowed name characters.
     If it doesn't, the name is added into output list.
@@ -52,7 +52,7 @@ def check_names(names):
             if ord(char) not in ALLOWED_ORD_VALS:
                 doesnt_conform = True
         if doesnt_conform:
-            result.append(name)
+            result.append(os.path.join(root, name))
     return result 
 
 
@@ -71,8 +71,8 @@ def check_vfat_chars_in_filenames(start_directory):
                 print("Changing directory to '%s', ..." % root)
                 curr_dir = os.getcwd()
                 os.chdir(root)
-                not_conforming_list.extend(check_names(files))
-                not_conforming_list.extend(check_names(directories))
+                not_conforming_list.extend(check_names(root, files))
+                not_conforming_list.extend(check_names(root, directories))
                 print("Changing directory to '%s'" % curr_dir)
                 os.chdir(curr_dir)
     except KeyboardInterrupt:
@@ -88,7 +88,8 @@ def main():
     curr_dir = os.getcwd()
     print("Checking VFAT conforming filenames in '%s' ...\n" % curr_dir)
     not_conforming_list = check_vfat_chars_in_filenames(curr_dir)
-    print("Results (files/directories containing VFAT forbidden characters:")
+    print("\nResults (%s files/dirs containing VFAT forbidden chars):" %
+            len(not_conforming_list))
     for item in not_conforming_list:
         print("\t%s" % item)
 
