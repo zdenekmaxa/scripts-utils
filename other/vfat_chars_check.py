@@ -18,8 +18,8 @@ import os, sys, string
 
 # allowed vfat file names characters, inclusive lists, ascii ord values
 ALLOWED_ORD_VALS = []
-for sub_list in ((32, 35), (38, 41), (43, 46), (48, 57), (61, 61),
-                 (65, 91), (93, 95), (97, 126)):
+for sub_list in ((32, 41), (43, 46), (48, 57), (61, 61),
+                 (64, 91), (93, 95), (97, 126)):
     # +1 include top
     ALLOWED_ORD_VALS.extend(range(sub_list[0], sub_list[1] + 1))
 
