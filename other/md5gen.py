@@ -38,24 +38,29 @@ def generate_checksums(directories, curr_dir):
                    "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
     other_cmd = ("find -type f -exec md5sum {} \; > "
                  "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
-    for dir_name in directories:
-        if dir_name in [".", "./"]:
-            command = top_dir_cmd
-        else:
-            command = other_cmd
-        os.chdir(dir_name)
-        print("Processing directory '%s' ..." % dir_name)
-        if os.path.exists(CHECKSUM_FILE):
-            os.rename(CHECKSUM_FILE, "%s-%s" % (CHECKSUM_FILE, time.time()))
-        print("\t'%s'" % command)
-        os.system(command)
-        check_file = os.path.join(curr_dir, dir_name, CHECKSUM_FILE)
-        if os.path.getsize(check_file) == 0:
-            print("File %s is empty, erasing." % check_file)
-            os.remove(check_file)
-        else:
-            generated_files.append(check_file)
-        os.chdir(curr_dir)
+    try:
+        for dir_name in directories:
+            if dir_name in [".", "./"]:
+                command = top_dir_cmd
+            else:
+                command = other_cmd
+            os.chdir(dir_name)
+            print("Processing directory '%s' ..." % dir_name)
+            if os.path.exists(CHECKSUM_FILE):
+                os.rename(CHECKSUM_FILE, "%s-%s" % (CHECKSUM_FILE,
+                                                    time.time()))
+            print("\t'%s'" % command)
+            os.system(command)
+            check_file = os.path.join(curr_dir, dir_name, CHECKSUM_FILE)
+            if os.path.getsize(check_file) == 0:
+                print("File %s is empty, erasing." % check_file)
+                os.remove(check_file)
+            else:
+                generated_files.append(check_file)
+            os.chdir(curr_dir)
+    except KeyboardInterrupt:
+        print "ctrl-c caught, exit"
+        sys.exit()
     return generated_files
 
 
@@ -134,16 +139,12 @@ def main():
     
     curr_dir = os.getcwd()
     print("Getting a list of dirs to operate in below %s ..." % curr_dir) 
-    try:
-        directories = get_directories(curr_dir, get_directories_cmd)
-        generated_checksum_files = generate_checksums(directories, curr_dir)
-        print("\n\nGenerated '%s' files (%s):" % (CHECKSUM_FILE, 
-            len(generated_checksum_files)))
-        for f in generated_checksum_files:
-            print("\t%s" % f)
-    except KeyboardInterrupt:
-        print "ctrl-c caught, exit"
-        sys.exit()
+    directories = get_directories(curr_dir, get_directories_cmd)
+    generated_checksum_files = generate_checksums(directories, curr_dir)
+    print("\n\nGenerated '%s' files (%s):" % (CHECKSUM_FILE, 
+        len(generated_checksum_files)))
+    for f in generated_checksum_files:
+        print("\t%s" % f)
 
 
 if __name__ == "__main__":
