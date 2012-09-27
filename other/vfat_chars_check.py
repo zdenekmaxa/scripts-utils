@@ -68,12 +68,12 @@ def check_vfat_chars_in_filenames(start_directory):
         for root, directories, files in os.walk(start_directory):
             print("Processing '%s' ..." % root)
             if len(files) > 0:
-                print("Changing directory to '%s', ..." % root)
+                print("Changing directory to '%s' ..." % root)
                 curr_dir = os.getcwd()
                 os.chdir(root)
                 not_conforming_list.extend(check_names(root, files))
                 not_conforming_list.extend(check_names(root, directories))
-                print("Changing directory to '%s'" % curr_dir)
+                print("Changing directory BACK to '%s'" % curr_dir)
                 os.chdir(curr_dir)
     except KeyboardInterrupt:
         print "Ctrl-c caught, exit"
