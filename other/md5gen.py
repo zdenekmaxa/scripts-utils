@@ -26,7 +26,7 @@ CHECKSUM_FILE = "md5.log"
 
 
 
-def generate_checksums(directories, curr_dir):
+def generate_checksums(directories, curr_dir, command):
     """
     Runs a find + checksum generating command in each directory in the
     input list. If CHECKSUM_FILE already exists, it's saved in to a backup
@@ -34,16 +34,8 @@ def generate_checksums(directories, curr_dir):
 
     """
     generated_files = []
-    top_dir_cmd = ("find -maxdepth 1 -type f -exec md5sum {} \; > "
-                   "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
-    other_cmd = ("find -type f -exec md5sum {} \; > "
-                 "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
     try:
         for dir_name in directories:
-            if dir_name in [".", "./"]:
-                command = top_dir_cmd
-            else:
-                command = other_cmd
             os.chdir(dir_name)
             print("Processing directory '%s' ..." % dir_name)
             if os.path.exists(CHECKSUM_FILE):
@@ -131,16 +123,50 @@ def get_directories(start_dir, find_command):
 
     
 def main():
+    # when getting files (generating checksums), go indefinitely deep then
+    gen_checksums_cmd_inf = ("find -type f -exec md5sum {} \; > "
+            "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
+    # when getting files (generating checksums), stay in the current directory
+    gen_checksums_cmd_curr = ("find -maxdepth 1 -type f -exec md5sum {} \; > "
+            "/tmp/%s ; mv /tmp/%s ." % (CHECKSUM_FILE, CHECKSUM_FILE))
+
     opts = process_cli_args(sys.argv)
+    curr_dir = os.getcwd()
+    print("Getting a list of dirs to operate in below %s ..." % curr_dir)
+    # depth CLI argument controls find's maxdepth when getting the list 
+    # of directories
     if opts.max_depth != sys.maxint:
         get_directories_cmd = "find -maxdepth %i -type d" % opts.max_depth
+        gen_checksums_cmd = gen_checksums_cmd_inf
+        print("Checksums in each directory only (directory depth=%s)." % 
+                opts.max_depth)
     else:
+        # directory maxdept is indefinite, returns all directories found
         get_directories_cmd = "find -type d"
-    
-    curr_dir = os.getcwd()
-    print("Getting a list of dirs to operate in below %s ..." % curr_dir) 
+        gen_checksums_cmd = gen_checksums_cmd_curr
+        print("Checksums in each directory only (directory depth=inf).")
+   
     directories = get_directories(curr_dir, get_directories_cmd)
-    generated_checksum_files = generate_checksums(directories, curr_dir)
+    # process all directories above requested directory depth separately,
+    # the checksumming happens only in the current directories and not below
+    only_current = []
+    for d in directories[:]:
+        if len(d.split(os.sep)) < opts.max_depth:
+            directories.remove(d)
+            only_current.append(d)
+    # do the current directory separately as the last one
+    for d in [".", "./"]:
+        if d in directories:
+            directories.remove(d)
+            only_current.append(d)
+
+    # now generate all files except in the root directory
+    generated_checksum_files = generate_checksums(directories, curr_dir,
+            gen_checksums_cmd)
+    # do the current directory now, and not deeper down
+    generated_checksum_files.extend(generate_checksums(only_current, curr_dir,
+        gen_checksums_cmd_curr))
+
     print("\n\nGenerated '%s' files (%s):" % (CHECKSUM_FILE, 
         len(generated_checksum_files)))
     for f in generated_checksum_files:
