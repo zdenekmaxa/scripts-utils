@@ -16,9 +16,17 @@ The time in the final file names can be changed by hour offset argument.
 Use case:
 Naming photo files from a digital cammera according to date/time name pattern.
 Shooting somewhere in different timezone while forgetting to change time on
-the camera - use offsetHour argument.
+the camera - use offset_hour argument.
 
-Usage: --help
+
+Usage:
+    ratt.py --help
+
+
+Tests [run from the ratt.py directory]:
+    py.test
+    py.test --pep8
+
 
 Author: Zdenek Maxa
 
@@ -38,34 +46,34 @@ from datetime import datetime
 from datetime import timedelta
 
 
-
-def processInputArgs(inputArgs):
+def process_input_args(inputArgs):
     parser = OptionParser()
     parser.add_option("-c", "--confirm", action="store_true", dest="confirm",
-            default=False, help="Confirmation to eventually rename files.")
-    parser.add_option("-o", "--offsetHour", dest="offsetHour", default=0,
-            help="Modify time in files names by +/- 1 .. 11 hours.")
+                      default=False,
+                      help="Confirmation to eventually rename files.")
+    parser.add_option("-o", "--offset_hour", dest="offset_hour", default=0,
+                      help="Modify time in files names by +/- 1 .. 11 hours.")
     options, args = parser.parse_args(inputArgs)
     # sanitize - offset has to be integer
     try:
-        offsetHour = int(options.offsetHour)
+        offset_hour = int(options.offset_hour)
     except ValueError:
         print("Wrong offset: '%s', setting back default." %
-                options.offsetHour)
-        offsetHour = 0
-    return options.confirm, offsetHour
+              options.offset_hour)
+        offset_hour = 0
+    return options.confirm, offset_hour
 
 
-def getDateTimeString(timestamp, hourOffset):
+def get_date_time_string(timestamp, hour_offset):
     """
     Returns string representing the timestamp time, according to the
-    date-time string pattern TARGET_FILE_NAME_PATTERN, 
+    date-time string pattern TARGET_FILE_NAME_PATTERN,
     shifted by +/- offset if defined (if non-zero).
 
     """
     dt = datetime.fromtimestamp(timestamp)
-    if hourOffset:
-        dt += timedelta(hours=hourOffset)
+    if hour_offset:
+        dt += timedelta(hours=hour_offset)
     tt = dt.timetuple()
     fnDict = dict(year="%d" % tt[0],
                   month="%02d" % tt[1],
@@ -78,59 +86,60 @@ def getDateTimeString(timestamp, hourOffset):
     return fn
 
 
-def getNewFileNames(currFileNames, hourOffset):
-    for currFileName in currFileNames:
-        if os.path.isdir(currFileName):
+def get_new_file_names(curr_file_names, hour_offset):
+    for name in curr_file_names:
+        if os.path.isdir(name):
             continue
         # get the file's last modification date
-        timestamp = os.path.getmtime(currFileName)
-        dateTimeFileName = getDateTimeString(timestamp, hourOffset)
-        yield dateTimeFileName, currFileName
-        
+        timestamp = os.path.getmtime(name)
+        date_time_file_name = get_date_time_string(timestamp, hour_offset)
+        yield date_time_file_name, name
 
-def doRename(oldName, newName, confirmation):
-    print("renaming %s -> %s" % (oldName, newName))
-    if os.path.exists(newName):
+
+def do_rename(old_name, new_name, confirmation):
+    print("renaming %s -> %s" % (old_name, new_name))
+    if os.path.exists(new_name):
         print("file '%s' exists, exit.")
         sys.exit(1)
     if confirmation:
-        os.rename(oldName, newName)
+        os.rename(old_name, new_name)
 
 
-def getFileRenameData(dataSourceFunc, hourOffset):
-    fnItems = getNewFileNames(dataSourceFunc(), hourOffset)
+def get_file_rename_data(data_source_func, hour_offset):
+    # file name items
+    fn_items = get_new_file_names(data_source_func(), hour_offset)
     # key = destination filename (still without counter in case of duplicates)
     # value = [list of old names], number of items determines suffix counter
     data = {}
-    for dtFileName, currFileName in fnItems:
+    # date time file name
+    for dt_file_name, curr_file_name in fn_items:
         try:
-            data[dtFileName].append(currFileName)
+            data[dt_file_name].append(curr_file_name)
         except KeyError:
-            data[dtFileName] = [currFileName]
+            data[dt_file_name] = [curr_file_name]
     return data
 
 
-def renameAccordingToTimeAndDate(data, confirmation):
-    for dtFileName, currFileNames in data.items():
+def rename_according_to_time_and_date(data, confirmation):
+    for dt_file_name, curr_file_names in data.items():
         counter = 0
-        for currFileName in currFileNames:
+        for curr_file_name in curr_file_names:
             counter += 1
-            ext = os.path.splitext(currFileName)[1]
-            if (len(currFileNames) > 1):
-                newName = "%s-%d%s" % (dtFileName, counter, ext)
+            ext = os.path.splitext(curr_file_name)[1]
+            if (len(curr_file_names) > 1):
+                new_name = "%s-%d%s" % (dt_file_name, counter, ext)
             else:
-                newName = "%s%s" % (dtFileName, ext)
-            doRename(currFileName, newName, confirmation)
+                new_name = "%s%s" % (dt_file_name, ext)
+            do_rename(curr_file_name, new_name, confirmation)
 
 
 def main():
-    confirmation, hourOffset = processInputArgs(sys.argv[1:])
-    dataSourceFunc = partial(os.listdir, os.getcwd())
-    data = getFileRenameData(dataSourceFunc, hourOffset)
-    renameAccordingToTimeAndDate(data, confirmation)
+    confirmation, hour_offset = process_input_args(sys.argv[1:])
+    data_source_func = partial(os.listdir, os.getcwd())
+    data = get_file_rename_data(data_source_func, hour_offset)
+    rename_according_to_time_and_date(data, confirmation)
     if not confirmation:
-         print("\n\nrun with '-c' to really perform files renaming.\n")
-
+        print("\n\nrun with '-c' to really perform files renaming.\n")
 
 
 if (__name__ == "__main__"):
