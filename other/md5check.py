@@ -18,20 +18,20 @@ import tempfile
 
 
 
-def printer(outputStream, what):
-    outputStream.seek(0)
+def printer(stream_out, what):
+    stream_out.seek(0)
     print("result (%s):" % what)
     analyzer = {"OK": 0,
                 "FAILED open or read": 0,
                 "No such file or directory": 0} 
-    for line in outputStream.readlines():
+    for line in stream_out.readlines():
         l = line.strip()
-        toPrint = True
+        to_print = True
         for a in analyzer:
             if l.endswith(a):
                 analyzer[a] = analyzer[a] + 1
-                toPrint = False
-        if toPrint:
+                to_print = False
+        if to_print:
             print l
 
     for a in analyzer:
@@ -44,21 +44,21 @@ def main():
     print("current directory: '%s'" % os.curdir)
     
     command = "find -iregex .*md5.* -print"
-    stdOut = tempfile.TemporaryFile("w+")
+    std_out = tempfile.TemporaryFile("w+")
     try:
         print("running command: '%s' ... " % command)
-        subprocess.check_call(command.split(), stdout = stdOut,
+        subprocess.check_call(command.split(), stdout = std_out,
                               close_fds = False)
     except subprocess.CalledProcessError as ex:
         print("error was raised, see output ... ")
     print("finished.\n")
 
-    stdOut.seek(0)
+    std_out.seek(0)
 
     # store original working directory
-    currDir = os.getcwd() 
+    current_dir = os.getcwd() 
 
-    for line in stdOut.readlines():
+    for line in std_out.readlines():
         print(78 * '-')
         entry = line.strip()
         print("found entry: '%s'" % entry)
@@ -69,22 +69,22 @@ def main():
         fileName = os.path.basename(entry)
         command = "md5sum -c %s" % fileName
         
-        stdOutSub = tempfile.TemporaryFile("w+")
-        stdErrSub = tempfile.TemporaryFile("w+")
+        std_out_sub = tempfile.TemporaryFile("w+")
+        std_err_sub = tempfile.TemporaryFile("w+")
         try:
             print("running command: '%s' ... " % command)
-            subprocess.check_call(command.split(), stdout = stdOutSub,
-                    stderr = stdErrSub, close_fds = False)
+            subprocess.check_call(command.split(), stdout = std_out_sub,
+                    stderr = std_err_sub, close_fds = False)
         except subprocess.CalledProcessError as ex:
             print("error was raised, see output ... ")
         print("finished, printing results ...")
 
-        printer(stdOutSub, "stdout")
-        printer(stdErrSub, "stderr")
+        printer(std_out_sub, "stdout")
+        printer(std_err_sub, "stderr")
 
-        os.chdir(currDir)
+        os.chdir(current_dir)
         print("\n\n\nchanged to the original working directory '%s'\n\n\n" %
-                currDir)
+                current_dir)
 
 
 if __name__ == "__main__":
