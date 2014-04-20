@@ -99,7 +99,7 @@ def get_new_file_names(curr_file_names, hour_offset):
 def do_rename(old_name, new_name, confirmation):
     print("renaming %s -> %s" % (old_name, new_name))
     if os.path.exists(new_name):
-        print("file '%s' exists, exit.")
+        print("file '%s' exists, exit." % new_name)
         sys.exit(1)
     if confirmation:
         os.rename(old_name, new_name)
