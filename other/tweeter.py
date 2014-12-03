@@ -12,6 +12,7 @@ messages after some threshold is exceeded.
 
 """
 
+
 import time
 from subprocess import Popen
 from multiprocessing import Process
@@ -39,16 +40,36 @@ class Tweeter(object):
     DATETIME_FORMAT = "%Y-%M-%d %H:%M:%S, %a"
     TWITTER_USER = "CompAidedPoetry"
     # take from tweeter_access_credentials file
-    API_KEY = 
-    CONSUMER_KEY =
-    CONSUMER_SECRET =
-    ACCESS_TOKEN_KEY =
-    ACCESS_TOKEN_SECRET =
+    API_KEY = ""
+    CONSUMER_KEY = ""
+    CONSUMER_SECRET = ""
+    ACCESS_TOKEN_KEY = ""
+    ACCESS_TOKEN_SECRET = ""
     MIN_WORD_LENGTH = 2
-    FORBIDDEN = ("--", ".", "!", "?", ",", "*", "'s", "n't", "...", ";",
-                 "[", "]", "(", ")", "{", "}", "'ll", ":", '"', "'ve",
-                 "william", "shakespeare", "twain", "'")
-
+    FORBIDDEN = ("--",
+                 ".",
+                 "!",
+                 "?",
+                 ",",
+                 "*",
+                 "'s",
+                 "n't",
+                 "...",
+                 ";",
+                 "[",
+                 "]",
+                 "(",
+                 ")",
+                 "{",
+                 "}",
+                 "'ll",
+                 ":",
+                 '"',
+                 "'ve",
+                 "william",
+                 "shakespeare",
+                 "twain",
+                 "'")
 
     def __init__(self):
         # starts either from 1 or from the message index read from the
@@ -57,10 +78,10 @@ class Tweeter(object):
         self._sendPosts = []
 
         print "connecting to twitter ..."    
-        self.twitter = twitter.Api(consumer_key = self.CONSUMER_KEY,
-                consumer_secret = self.CONSUMER_SECRET,
-                access_token_key = self.ACCESS_TOKEN_KEY,
-                access_token_secret = self.ACCESS_TOKEN_SECRET)
+        self.twitter = twitter.Api(consumer_key=self.CONSUMER_KEY,
+                                   consumer_secret=self.CONSUMER_SECRET,
+                                   access_token_key=self.ACCESS_TOKEN_KEY,
+                                   access_token_secret=self.ACCESS_TOKEN_SECRET)
         print "verifying twitter connection:"
         verif = self.twitter.VerifyCredentials()
         print verif
@@ -69,18 +90,15 @@ class Tweeter(object):
         signal.signal(signal.SIGHUP, self._signalHandler)
         signal.signal(signal.SIGTERM, self._signalHandler)
 
-
     def _signalHandler(self, sigNum, frame):
         m = "signal '%s' received" % sigNum
         print "raising signal exception ..."
         raise SignalTermination(m)
 
-
     def _getTimeStamp(self):
         now = time.localtime()
         dt = time.strftime(self.DATETIME_FORMAT, now)
         return dt
-
 
     def _checkWord(self, w):
         if len(w) < self.MIN_WORD_LENGTH:
@@ -91,7 +109,6 @@ class Tweeter(object):
         else:
             return True
 
-   
     def _getFortuneOutput(self):
         """
         Returns set of words, no white spaces, stripped of unwanted
@@ -100,7 +117,7 @@ class Tweeter(object):
         """
         output = TemporaryFile("w+")
         for i in range(self.FORTUNE_SOURCE_ITERATIONS):
-            proc = Popen(self.SOURCE_PROGRAM, stdout = output)
+            proc = Popen(self.SOURCE_PROGRAM, stdout=output)
             returncode = proc.wait()
             output.write("\n")
             
@@ -115,7 +132,6 @@ class Tweeter(object):
         output.close()
         return words
 
-
     def _getMsg(self):
         msgWords = list(self._getFortuneOutput())
         r = ""
@@ -124,15 +140,13 @@ class Tweeter(object):
             r += "%s " % msgWords.pop(chosen)
         return r.strip()
 
-
-    def _getLatestPosts(self, nPosts = 1):
+    def _getLatestPosts(self, nPosts=1):
         try:
-            statuses = self.twitter.GetUserTimeline(screen_name =
-                    self.TWITTER_USER, count = nPosts)
+            statuses = self.twitter.GetUserTimeline(screen_name=self.TWITTER_USER,
+                                                    count=nPosts)
             return statuses
         except twitter.TwitterError, ex:
             print ex
-        
 
     def _sendPost(self, msg):
         try:
@@ -141,21 +155,19 @@ class Tweeter(object):
             print ex
         #print status
 
-
     def _checkPreviousPost(self, msg):
         """
         Previous post should agree to 'msg'.
 
         """
         print "%s checking previous post ..." % self._getTimeStamp()
-        ss = self._getLatestPosts(nPosts = 1)
+        ss = self._getLatestPosts(nPosts=1)
         print "'%s' == '%s'" % (msg, ss[0].text)
         if ss[0].text != msg:
             return False
         else:
             return True
     
-
     def _postsSender(self, startIndex):
         counter = startIndex
         msg = ""
@@ -184,10 +196,9 @@ class Tweeter(object):
         except SignalTermination, ex:
             print "terminating, exception caught:", ex
             
-    
     def start(self):
-        self.proc = Process(target = self._postsSender,
-                            args = (self._msgCounter,))
+        self.proc = Process(target=self._postsSender,
+                            args=(self._msgCounter,))
         try:
             self.proc.start()
             self.proc.join()
@@ -200,7 +211,6 @@ class Tweeter(object):
             print "terminating ..."
             self.proc.terminate()
         
-
 
 def main():
     t = Tweeter()
