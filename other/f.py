@@ -4,7 +4,8 @@
 f - wrapper around unix find utility
  
 f "substring" [-d <where>]    searches for directories / files names 
-                              containing substring in the directory where,                                    by default in the current directory
+                              containing substring in the directory where,
+                              by default in the current directory
 """
 
 # 2009-10-23 removed feature of reading patterns from a file
