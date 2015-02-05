@@ -106,12 +106,25 @@ def get_timestamp_from_exif(file_name):
     # format of data as read from exif
     dt_format = "%Y:%m:%d %H:%M:%S"
     fd = open(file_name, "rb")
-    data = exifread.process_file(fd, strict=True, stop_tag="DateTimeOriginal")
-    # returned in a form '2014:06:28 11:53:21'
-    dt = str(data["EXIF DateTimeOriginal"])
-    fd.close()
-    # timestamp representation of the datetime
-    ts = time.mktime(datetime.datetime.strptime(dt, dt_format).timetuple())
+    try:
+        data = exifread.process_file(fd,
+                                     strict=True)
+                                     #stop_tag="DateTimeOriginal")
+        # returned in a form '2014:06:28 11:53:21'
+        if data.has_key("EXIF DateTimeOriginal"):
+            dt = str(data["EXIF DateTimeOriginal"])
+        elif data.has_key("EXIF DateTimeDigitized"):
+            dt = str(data["EXIF DateTimeDigitized"])
+        else:
+            dt = str(data["Image DateTime"])
+        # timestamp representation of the datetime
+        ts = time.mktime(datetime.datetime.strptime(dt, dt_format).timetuple())
+    except Exception as ex:
+        print "Can't process file '%s', reason:\n%s" % (file_name, ex)
+        #print "EXIF keys:\n%s" % data.keys()
+        sys.exit(1)
+    finally:
+        fd.close()
     # check by converting back via timestamp
     check_dt = datetime.datetime.fromtimestamp(ts).strftime(dt_format)
     assert dt == check_dt
