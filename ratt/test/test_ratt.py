@@ -1,6 +1,9 @@
 """
 tests for ratt.py
 
+TODO:
+    exif stuff not tested
+
 """
 
 import os
@@ -22,26 +25,28 @@ from ratt import DAYS_OF_WEEK
 
 def test_process_input_args():
     inp = ""
-    confirmation, hour_offset = process_input_args(inp.split())
+    confirmation, hour_offset, exif = process_input_args(inp.split())
     assert confirmation is False
     assert hour_offset == 0
+    assert exif is False
 
     inp = "-c -o 9"
-    confirmation, hour_offset = process_input_args(inp.split())
+    confirmation, hour_offset, exif = process_input_args(inp.split())
     assert confirmation is True
     assert hour_offset == 9
 
     # wrong offset, should fall back to default
     inp = "-c -o a"
-    confirmation, hour_offset = process_input_args(inp.split())
+    confirmation, hour_offset, exif = process_input_args(inp.split())
     assert confirmation is True
     assert hour_offset == 0
 
     # wrong offset, should fall back to default
-    inp = "-c -o 2.3"
-    confirmation, hour_offset = process_input_args(inp.split())
+    inp = "-c -o 2.3 -e"
+    confirmation, hour_offset, exif = process_input_args(inp.split())
     assert confirmation is True
     assert hour_offset == 0
+    assert exif is True
 
 
 def test_get_date_time_string():
@@ -92,7 +97,7 @@ def get_files(num_files):
 def test_get_file_rename_data():
     def do_test(timestamp, input_files):
         data_source_func = partial(get_files_names, input_files)
-        data = get_file_rename_data(data_source_func, 0)
+        data = get_file_rename_data(data_source_func, 0, False)
         s = get_date_time_string(timestamp, 0)
         for date_time_file_name, old_files in data.items():
             assert s == date_time_file_name
@@ -120,13 +125,13 @@ def test_rename_according_to_time_and_date():
     files = get_files(1)
     now = time.time()
     data_source_func = partial(get_files_names, files)
-    data = get_file_rename_data(data_source_func, 0)
+    data = get_file_rename_data(data_source_func, 0, False)
     # tempfile would fail on attemp to rename, don't perform actual rename
     rename_according_to_time_and_date(data, False)
 
     files = get_files(5)
     now = time.time()
     data_source_func = partial(get_files_names, files)
-    data = get_file_rename_data(data_source_func, 0)
+    data = get_file_rename_data(data_source_func, 0, False)
     # tempfile would fail on attemp to rename, don't perform actual rename
     rename_according_to_time_and_date(data, False)
