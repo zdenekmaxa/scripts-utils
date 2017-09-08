@@ -15,7 +15,7 @@ import os
 import sys
 import subprocess
 import tempfile
-
+import pprint
 
 
 def printer(stream_out, what):
@@ -38,6 +38,7 @@ def printer(stream_out, what):
         if analyzer[a]:
             print("'%s'-ending entries: %s" % (a, analyzer[a]))
 
+    return analyzer[a]
 
 
 def main():
@@ -58,6 +59,8 @@ def main():
     # store original working directory
     current_dir = os.getcwd() 
 
+    total_ok, total_failed = 0, 0
+    dirs_with_failures = []
     for line in std_out.readlines():
         print(78 * '-')
         entry = line.strip()
@@ -71,21 +74,31 @@ def main():
         
         std_out_sub = tempfile.TemporaryFile("w+")
         std_err_sub = tempfile.TemporaryFile("w+")
-        try:
-            print("running command: '%s' ... " % command)
-            subprocess.check_call(command.split(), stdout = std_out_sub,
-                    stderr = std_err_sub, close_fds = False)
-        except subprocess.CalledProcessError as ex:
-            print("error was raised, see output ... ")
-        print("finished, printing results ...")
+        print("running command: '%s' ... " % command)
+        proc = subprocess.Popen(
+                command.split(),
+                stdout=std_out_sub,
+                stderr=std_err_sub,
+                close_fds=False)
+        ret_code = proc.wait()
+        if ret_code:
+            print("command return code was %s, see output ..." % ret_code)
+            dirs_with_failures.append(path)
+        print("command finished, results:")
 
-        printer(std_out_sub, "stdout")
-        printer(std_err_sub, "stderr")
+        total_ok += printer(std_out_sub, "stdout")
+        _ = printer(std_err_sub, "stderr")
 
         os.chdir(current_dir)
         print("\n\n\nchanged to the original working directory '%s'\n\n\n" %
                 current_dir)
 
+    print("TOTAL:")
+    print("sum maching entries: %s" % total_ok)
+    print("directories with failed sums / missing files: %s" % 
+            pprint.pformat(dirs_with_failures))
+
 
 if __name__ == "__main__":
     main()
+
