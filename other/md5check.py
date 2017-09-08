@@ -19,6 +19,7 @@ import pprint
 
 
 def printer(stream_out, what):
+    number = 0
     stream_out.seek(0)
     print("result (%s):" % what)
     analyzer = {"OK": 0,
@@ -37,8 +38,9 @@ def printer(stream_out, what):
     for a in analyzer:
         if analyzer[a]:
             print("'%s'-ending entries: %s" % (a, analyzer[a]))
+            number = analyzer[a]
 
-    return analyzer[a]
+    return number
 
 
 def main():
