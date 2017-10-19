@@ -38,14 +38,14 @@ import tempfile
 
 def printUsage():
 
-    print """
+    print("""
 f - wrapper utility around find, by default searches current directory
     if filelist is specified, it takes a list of substrings to search from
     there
 
 usage:
 f "substring"  [-d, --directory directory_to_search_in]
-"""
+""")
 
 
 def getOptions(opt):
@@ -53,7 +53,7 @@ def getOptions(opt):
     whereToSearch = os.getcwd()  # get current working directory
 
     if(len(opt) < 1):
-        print "No arguments provided, try --help"
+        print("No arguments provided, try --help")
         sys.exit(0)
 
     # is the first argument substring to be searched?
@@ -67,14 +67,14 @@ def getOptions(opt):
             whatToSearch = opt[2]
         except IndexError:
             printUsage()
-            print "Incorrect command line options"
+            print("Incorrect command line options")
             sys.exit(1)
 
     # standard scenario, command called: f substring [-d wheredirectory]
     try:
         options, args = getopt.getopt(opt, "hd:", ["help", "directory="])
     except getopt.GetoptError:
-        print "Incorrect command line options, try --help"
+        print("Incorrect command line options, try --help")
         sys.exit(1)
     else:
         for o, a in options:
@@ -111,15 +111,15 @@ def performSearch(what, where):
     stdOut.seek(0), stdErr.seek(0)
 
     c = command % { "where" : where, "what" : what }
-    print "executing command: \"%s\" ... " % c,
+    print("executing command: \"%s\" ... " % c)
     
     try:
         subprocess.check_call(c.split(), stdout = stdOut, stderr = stdErr,
                 close_fds = False)
-    except subprocess.CalledProcessError, ex:
-        print "error was raised, see output ... ",
+    except subprocess.CalledProcessError as ex:
+        print("error was raised, see output ... ")
     
-    print "finished."
+    print("finished.")
 
     # move pointer to the beginning
     stdOut.seek(0), stdErr.seek(0)
@@ -139,10 +139,10 @@ def main():
     
     results = performSearch(whatToSearch, whereToSearch)
 
-    print "searching directory: \"%s\"" % whereToSearch
-    print "searching for pattern: \"%s\"" % whatToSearch
-    print "results: %s" % len(results)
-    print 78 * '-'
+    print("searching directory: \"%s\"" % whereToSearch)
+    print("searching for pattern: \"%s\"" % whatToSearch)
+    print("results: %s" % len(results))
+    print(78 * '-')
 
     results.sort()
     for i in range(len(results)):
@@ -156,7 +156,7 @@ def main():
         # not have, so would be more damaging than helpful, thus
         # removing completely for now
         
-        print "%s" % r
+        print("%s" % r)
 
 
 if __name__ == "__main__":
