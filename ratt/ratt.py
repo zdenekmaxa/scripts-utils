@@ -103,7 +103,7 @@ def get_date_time_string(timestamp, hour_offset):
 
 
 def get_timestamp_from_exif(file_name):
-    print("Processing file '%s' ...") % file_name
+    print("Processing file '%s' ..." % file_name)
     # format of data as read from exif
     dt_format = "%Y:%m:%d %H:%M:%S"
     fd = open(file_name, "rb")
