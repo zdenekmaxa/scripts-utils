@@ -50,20 +50,20 @@ def test_process_input_args():
 
 
 def test_get_date_time_string():
-    d = datetime(2011, 02, 03, 04, 05, 06)
+    d = datetime(2011, 2, 3, 4, 5, 6)
     ts = time.mktime(d.timetuple())
     dow = DAYS_OF_WEEK[d.weekday()]
     s = get_date_time_string(ts, 0)
     assert s == "2011-02-03-%s-04-05-06" % dow
 
-    d = datetime(2011, 02, 03, 01, 05, 06)
+    d = datetime(2011, 2, 3, 1, 5, 6)
     ts = time.mktime(d.timetuple())
     dow = DAYS_OF_WEEK[d.weekday()]
     s = get_date_time_string(ts, 3)  # hour offset
     assert s == "2011-02-03-%s-04-05-06" % dow
 
     # negative offset over midnight, to the previous day
-    d = datetime(2011, 02, 03, 01, 05, 06)
+    d = datetime(2011, 2, 3, 1, 5, 6)
     ts = time.mktime(d.timetuple())
     s = get_date_time_string(ts, -3)  # hour offset
     # it will also be previous week day now
@@ -71,7 +71,7 @@ def test_get_date_time_string():
     assert s == "2011-02-02-%s-22-05-06" % dow
 
     # positive offset over midnight
-    d = datetime(2011, 02, 03, 20, 05, 06)
+    d = datetime(2011, 2, 3, 20, 5, 6)
     ts = time.mktime(d.timetuple())
     s = get_date_time_string(ts, 9)  # hour offset
     # it will also be next week day now

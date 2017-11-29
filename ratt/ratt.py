@@ -103,7 +103,7 @@ def get_date_time_string(timestamp, hour_offset):
 
 
 def get_timestamp_from_exif(file_name):
-    print "Processing file '%s' ..." % file_name
+    print("Processing file '%s' ...") % file_name
     # format of data as read from exif
     dt_format = "%Y:%m:%d %H:%M:%S"
     fd = open(file_name, "rb")
@@ -117,7 +117,7 @@ def get_timestamp_from_exif(file_name):
                      "EXIF DateTimeDigitized",
                      "Image DateTime")
         for key in exif_keys:
-            #print "key: %s   presence: %s" % (key, key in data.keys())
+            #print("key: %s   presence: %s" % (key, key in data.keys()))
             if key in data.keys():
                 dt = str(data[key])
                 break
@@ -127,8 +127,8 @@ def get_timestamp_from_exif(file_name):
         # timestamp representation of the datetime
         ts = time.mktime(datetime.datetime.strptime(dt, dt_format).timetuple())
     except Exception as ex:
-        print "Can't process file '%s', reason:\n%s" % (file_name, ex)
-        #print "EXIF keys:\n%s" % data.keys()
+        print("Can't process file '%s', reason:\n%s" % (file_name, ex))
+        #print("EXIF keys:\n%s" % data.keys())
         sys.exit(1)
     finally:
         fd.close()
