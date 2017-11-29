@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # (C) 2003 by Zdenek Maxa, <zdenek.maxa@email.cz>
 
 """
