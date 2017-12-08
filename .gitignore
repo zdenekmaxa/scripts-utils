@@ -1,3 +1,4 @@
 *.pyc
 other/tweeter_access_credentials.py
 .idea/
+.cache

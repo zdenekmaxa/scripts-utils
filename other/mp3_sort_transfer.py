@@ -45,7 +45,7 @@ def process_base_dir_1(dir_to_process, target_dir):
 
 
 def process_base_dir_2(dir_to_process, target_dir):
-    base_dir_name = os.path.join(os.getcwd(), "on_mp3_cd")
+    base_dir_name = os.path.join(os.getcwd(), dir_to_process)
     os.chdir(base_dir_name)
     for disk_dir in sorted(os.listdir(os.getcwd())):
         os.chdir(disk_dir)
@@ -61,7 +61,8 @@ def main():
     # target dir
     target_dir = os.path.join(os.getcwd(), "all-sorted")
     # both two source directories are organized differently
-    process_base_dir_1("cds-burn-preselect-burn--mixed", target_dir)
+    process_base_dir_1("burn", target_dir)
+    process_base_dir_1("on_cd", target_dir)
     process_base_dir_2("on_mp3_cd", target_dir)
     print "\nfinished."
     
