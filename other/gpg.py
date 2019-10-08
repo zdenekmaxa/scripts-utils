@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 """
 Wrapper around GNU gpg program
@@ -20,13 +20,13 @@ import tempfile
 
 
 def printHelp():
-    print  """
+    print("""
 Simple wrapper around GNU gpg program to encrypt/decrypt files. Takes
 exactly one argument on the command line - the file to encrypt / decrypt.
 
 Decription is done if file has .gpg extension, encryption otherwise.
 Entension .gpg is added automatically when encrypting a file.
-"""
+""")
 
 
 def encrypt(input):
@@ -42,22 +42,22 @@ def encrypt(input):
 
     output = "".join([input, ".gpg"])
     if os.path.exists(output):
-        print "File '%s' exists, exit." % output
+        print("File '%s' exists, exit." % output)
         sys.exit(1)
 
     c = ec % { "output" : output }
-    print ("Running command: '%s' [input file '%s' provided] ... " % (c,
+    print("Running command: '%s' [input file '%s' provided] ... " % (c,
             input)),
     inputFile = open(input, "rb")
 
     try:
         subprocess.check_call(c.split(), stdin = inputFile, close_fds = False)
-    except subprocess.CalledProcessError, ex:
-        print "error was raised, see output ... ",
+    except subprocess.CalledProcessError as ex:
+        print("error was raised, see output ... ")
     
-    print "finished."
+    print("finished.")
     inputFile.close()
-    print "\nDone\nDon't forget to remove the original file."
+    print("\nDone\nDon't forget to remove the original file.")
 
 
 def decrypt(input):
@@ -72,22 +72,22 @@ def decrypt(input):
 
     output = input[:-4] # without the .gpg extension
     if os.path.exists(output):
-        print "File '%s' exists, exit." % output
+        print("File '%s' exists, exit." % output)
         sys.exit(1)
 
     c = dc % { "output" : output, "input" : input }
-    print "Running command: '%s' ... " % c,
+    print("Running command: '%s' ... " % c)
 
     stdOut = tempfile.TemporaryFile("w+")
     try:
         subprocess.check_call(c.split(), stdout = stdOut, close_fds = False)
-    except subprocess.CalledProcessError, ex:
-        print "error was raised, see output ... ",
+    except subprocess.CalledProcessError as ex:
+        print("error was raised, see output ... ")
     
-    print "finished."
+    print("finished.")
     stdOut.seek(0)
     sys.stdout.write(stdOut.read())
-    print "\nDone.\nDon't forget to remove the original file."
+    print("\nDone.\nDon't forget to remove the original file.")
 
 
 def main():
@@ -99,21 +99,21 @@ def main():
         else:
             inputFile = sys.argv[1]
     else:
-        print "%s wrapper around GNU gpg program, try -h" % sys.argv[0]
+        print("%s wrapper around GNU gpg program, try -h" % sys.argv[0])
         sys.exit(0)
 
     try:
         open(inputFile, 'r')
-    except IOError, ex:
-        print "Can't open file %s, reason: %s" % (inputFile, ex)
+    except IOError as ex:
+        print("Can't open file %s, reason: %s" % (inputFile, ex))
         sys.exit(1)
 
     ext = inputFile[-4:] # get file extension (including dot)
     if ext == ".gpg":
-        print "File has .gpg extension, thus going to decrypt it ..."
+        print("File has .gpg extension, thus going to decrypt it ...")
         decrypt(inputFile)
     else:
-        print "File has not got .gpg extension, thus going to ecrypt it ..."
+        print("File has not got .gpg extension, thus going to ecrypt it ...")
         encrypt(inputFile)
 
 
